@@ -1,5 +1,6 @@
 import {
   Body,
+  ConflictException,
   Controller,
   Headers,
   HttpCode,
@@ -76,10 +77,7 @@ export class C6LeadsController {
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      if (message.includes("already uses") || message.includes("already uses")) {
-        return { status: "already_exists", email };
-      }
-      if (message.includes("already uses") || message.includes("already uses")) {
+      if (error instanceof ConflictException) {
         return { status: "already_exists", email };
       }
       throw error;

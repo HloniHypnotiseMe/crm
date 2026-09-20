@@ -15,6 +15,7 @@ import {
 } from "trpc-to-openapi";
 import { AppModule } from "./app.module";
 import { ContextLogger } from "./logging/context-logger";
+import express from "express";
 import { REST_BRIDGE_PATH } from "./trpc/openapi";
 import { createBaseTrpcContext } from "./trpc/trpc.context";
 
@@ -24,6 +25,11 @@ export async function createApp(): Promise<NestExpressApplication> {
 		new ExpressAdapter(),
 		{ bodyParser: false, logger: new ContextLogger() },
 	);
+
+	// The tRPC bridge owns its transport parsing, so the app keeps the global
+	// body parser disabled. C6 lead ingestion is a normal JSON REST endpoint and
+	// therefore gets a path-scoped parser instead of changing tRPC behavior.
+	app.use("/internal/c6-leads", express.json({ limit: "256kb" }));
 
 	app.use(helmet());
 	app.useGlobalPipes(

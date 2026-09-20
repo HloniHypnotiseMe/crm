@@ -125,6 +125,10 @@ export class EnvironmentVariables {
 
 	@IsOptional()
 	@IsString()
+	C6_MAIL_WEBHOOK_SECRET?: string;
+
+	@IsOptional()
+	@IsString()
 	CRM_TELEMETRY_DISABLED?: string;
 }
 

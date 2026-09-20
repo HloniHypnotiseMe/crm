@@ -8,11 +8,17 @@ const contacts = {
     email?: string;
     phone?: string;
     title?: string;
+    companyId?: string | null;
   }) => ({
     id: "contact_123",
     firstName: input.firstName,
     lastName: input.lastName ?? null,
   }),
+};
+
+const companies = {
+  list: async () => ({ rows: [], total: 0, facetCounts: {} }),
+  create: async () => ({ id: "company_123", name: "Acme", domain: null }),
 };
 
 describe("C6 lead webhook", () => {
@@ -28,12 +34,12 @@ describe("C6 lead webhook", () => {
   });
 
   test("rejects an invalid secret", async () => {
-    const controller = new C6LeadsController(contacts as never);
+    const controller = new C6LeadsController(companies as never, contacts as never);
 
     await expect(
       controller.ingest("wrong", {
         event: "lead.created",
-        data: { firstName: "Test", email: "test@example.com" },
+        data: { contactName: "Test Lead", email: "test@example.com", companyName: "Acme" },
       }),
     ).rejects.toThrow("Invalid C6 event secret");
   });
@@ -45,10 +51,10 @@ describe("C6 lead webhook", () => {
       controller.ingest("test-secret", {
         event: "lead.created",
         data: {
-          firstName: "Test",
-          lastName: "Lead",
+          contactName: "Test Lead",
           email: "test@example.com",
           phone: "0100000000",
+          companyName: "Acme",
         },
       }),
     ).resolves.toEqual({
@@ -64,7 +70,7 @@ describe("C6 lead webhook", () => {
         throw new ConflictException("A lead already exists.");
       },
     };
-    const controller = new C6LeadsController(duplicateContacts as never);
+    const controller = new C6LeadsController(companies as never, duplicateContacts as never);
 
     await expect(
       controller.ingest("test-secret", {

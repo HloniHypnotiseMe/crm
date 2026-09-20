@@ -76,7 +76,6 @@ export class C6LeadsController {
         source: "c6group.co.za",
       };
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
       if (error instanceof ConflictException) {
         return { status: "already_exists", email };
       }
